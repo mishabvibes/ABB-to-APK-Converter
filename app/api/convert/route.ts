@@ -6,6 +6,7 @@ import { existsSync } from 'fs';
 // Configure route for larger file uploads
 export const maxDuration = 300; // 5 minutes for large file processing
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic'; // Ensure dynamic rendering
 
 const UPLOAD_DIR = join(process.cwd(), 'uploads');
 
@@ -23,7 +24,21 @@ export async function POST(request: NextRequest) {
   try {
     await ensureUploadDir();
 
-    const formData = await request.formData();
+    // Try to get form data - this might fail if body is too large
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch (error) {
+      console.error('Failed to parse form data:', error);
+      return NextResponse.json(
+        { 
+          error: 'Failed to process file upload. The file might be too large or the request is malformed.',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        },
+        { status: 400 }
+      );
+    }
+
     const file = formData.get('file') as File;
 
     if (!file) {

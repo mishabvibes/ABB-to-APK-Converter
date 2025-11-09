@@ -9,6 +9,15 @@ import { Progress } from '@/components/ui/progress';
 
 type ConversionState = 'idle' | 'uploading' | 'converting' | 'completed' | 'error';
 
+// Helper function to format file size
+const formatFileSize = (bytes: number) => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+};
+
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -41,22 +50,44 @@ export default function Home() {
     setIsDragging(false);
 
     const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile && droppedFile.name.endsWith('.aab')) {
-      setFile(droppedFile);
-      setError(null);
-    } else {
+    if (!droppedFile) return;
+    
+    // Validate file extension
+    if (!droppedFile.name.endsWith('.aab')) {
       setError('Please upload a valid .aab (Android App Bundle) file');
+      return;
     }
+    
+    // Validate file size (200MB max)
+    const maxSize = 200 * 1024 * 1024; // 200MB
+    if (droppedFile.size > maxSize) {
+      setError(`File size (${formatFileSize(droppedFile.size)}) exceeds the maximum limit of 200MB`);
+      return;
+    }
+    
+    setFile(droppedFile);
+    setError(null);
   }, []);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile && selectedFile.name.endsWith('.aab')) {
-      setFile(selectedFile);
-      setError(null);
-    } else {
+    if (!selectedFile) return;
+    
+    // Validate file extension
+    if (!selectedFile.name.endsWith('.aab')) {
       setError('Please upload a valid .aab (Android App Bundle) file');
+      return;
     }
+    
+    // Validate file size (200MB max)
+    const maxSize = 200 * 1024 * 1024; // 200MB
+    if (selectedFile.size > maxSize) {
+      setError(`File size (${formatFileSize(selectedFile.size)}) exceeds the maximum limit of 200MB`);
+      return;
+    }
+    
+    setFile(selectedFile);
+    setError(null);
   }, []);
 
   const handleConvert = async () => {
@@ -89,9 +120,44 @@ export default function Home() {
 
       clearInterval(uploadInterval);
 
+      // Check content type before parsing
+      const contentType = response.headers.get('content-type') || '';
+      let data: any;
+
+      try {
+        // Try to parse as JSON
+        const text = await response.text();
+        
+        // Check if response is HTML (error page) instead of JSON
+        if (text.trim().startsWith('<!') || text.trim().startsWith('<html')) {
+          console.error('Received HTML error page:', text.substring(0, 500));
+          throw new Error(
+            response.status === 413 
+              ? 'File is too large. The server cannot process files this large. Please try a smaller file or contact support.' 
+              : `Server error: Received HTML error page (Status: ${response.status})`
+          );
+        }
+
+        // Try to parse as JSON
+        if (contentType.includes('application/json') || text.trim().startsWith('{')) {
+          data = JSON.parse(text);
+        } else {
+          throw new Error(`Unexpected response format: ${contentType}. Response: ${text.substring(0, 100)}`);
+        }
+      } catch (parseError) {
+        // If parsing fails, provide a helpful error message
+        console.error('Response parsing error:', parseError);
+        throw new Error(
+          response.status === 413 
+            ? 'File is too large. Please try a smaller file (max 200MB).' 
+            : response.status === 500
+            ? 'Server error occurred. Please try again later.'
+            : `Failed to process response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`
+        );
+      }
+
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Conversion failed');
+        throw new Error(data?.error || `Conversion failed: ${response.status} ${response.statusText}`);
       }
 
       setState('converting');
@@ -107,8 +173,6 @@ export default function Home() {
           return prev + 15;
         });
       }, 300);
-
-      const data = await response.json();
 
       clearInterval(convertInterval);
       setProgress(100);
@@ -152,14 +216,6 @@ export default function Home() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
   return (
