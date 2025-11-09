@@ -31,8 +31,12 @@ EXPOSE 3000
 
 # Set environment variables
 ENV NODE_ENV=production
+
+# Render uses PORT environment variable, Next.js will use it automatically
+# But we set a default for local development
 ENV PORT=3000
 
 # Start application
+# Next.js will use PORT from environment variable automatically
 CMD ["npm", "start"]
 

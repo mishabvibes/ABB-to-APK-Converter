@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: aab-to-apk-converter
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+    # Render automatically sets PORT environment variable
+    # Next.js will use it automatically, no need to set it here
+    healthCheckPath: /
+    autoDeploy: true
+
