@@ -3,6 +3,10 @@ import { writeFile, readFile, unlink, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
+// Configure route for larger file uploads
+export const maxDuration = 300; // 5 minutes for large file processing
+export const runtime = 'nodejs';
+
 const UPLOAD_DIR = join(process.cwd(), 'uploads');
 
 // Ensure upload directory exists
@@ -30,18 +34,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file extension
-    if (!file.name.endsWith('.abb')) {
+    if (!file.name.endsWith('.aab')) {
       return NextResponse.json(
-        { error: 'Invalid file type. Please upload a .abb file' },
+        { error: 'Invalid file type. Please upload a .aab (Android App Bundle) file' },
         { status: 400 }
       );
     }
 
-    // Validate file size (max 50MB)
-    const maxSize = 50 * 1024 * 1024; // 50MB
+    // Validate file size (max 200MB - AAB files can be large)
+    const maxSize = 200 * 1024 * 1024; // 200MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: 'File size exceeds the maximum limit of 50MB' },
+        { error: 'File size exceeds the maximum limit of 200MB' },
         { status: 400 }
       );
     }
@@ -57,7 +61,7 @@ export async function POST(request: NextRequest) {
     await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate 2s conversion
 
     // Generate APK file (mock - just copy and rename for demonstration)
-    const apkFileName = file.name.replace('.abb', '.apk');
+    const apkFileName = file.name.replace('.aab', '.apk');
     apkPath = join(UPLOAD_DIR, `${Date.now()}-${apkFileName}`);
     
     // For mock conversion, we'll create a dummy APK file

@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ABB to APK Converter",
-  description: "Convert your .abb files to .apk format effortlessly",
+  title: "AAB to APK Converter",
+  description: "Convert your .aab (Android App Bundle) files to .apk format effortlessly",
 };
 
 export default function RootLayout({

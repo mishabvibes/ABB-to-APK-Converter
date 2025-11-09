@@ -24,7 +24,7 @@
 - **Responsive**: Works perfectly on desktop, tablet, and mobile devices
 
 ### 🔧 Functionality
-- **File Upload**: Supports .abb files up to 50MB
+- **File Upload**: Supports .aab (Android App Bundle) files up to 50MB
 - **File Validation**: Automatic validation of file type and size
 - **Mock Conversion**: Simulates APK conversion (replace with real logic)
 - **Download**: Direct download of converted APK files
@@ -83,7 +83,7 @@ Abb-to-apk/
 ### File Upload Issues
 - Check that the `uploads` directory has write permissions
 - Verify file size is under 50MB
-- Ensure file extension is `.abb`
+- Ensure file extension is `.aab` (Android App Bundle)
 
 ### API Errors
 - Check server console for error messages
@@ -92,7 +92,7 @@ Abb-to-apk/
 
 ## Next Steps
 
-1. **Implement Real Conversion**: Replace mock conversion with actual ABB to APK conversion logic
+1. **Implement Real Conversion**: Replace mock conversion with actual AAB to APK conversion logic (use Google's `bundletool`)
 2. **Add Authentication**: Implement user authentication if needed
 3. **Add Database**: Store conversion history in a database
 4. **Add Analytics**: Track usage and conversions

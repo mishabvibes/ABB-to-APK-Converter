@@ -41,21 +41,21 @@ export default function Home() {
     setIsDragging(false);
 
     const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile && droppedFile.name.endsWith('.abb')) {
+    if (droppedFile && droppedFile.name.endsWith('.aab')) {
       setFile(droppedFile);
       setError(null);
     } else {
-      setError('Please upload a valid .abb file');
+      setError('Please upload a valid .aab (Android App Bundle) file');
     }
   }, []);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile && selectedFile.name.endsWith('.abb')) {
+    if (selectedFile && selectedFile.name.endsWith('.aab')) {
       setFile(selectedFile);
       setError(null);
     } else {
-      setError('Please upload a valid .abb file');
+      setError('Please upload a valid .aab (Android App Bundle) file');
     }
   }, []);
 
@@ -172,10 +172,10 @@ export default function Home() {
           className="text-center mb-8"
         >
           <h1 className="text-5xl font-bold text-white mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-            ABB to APK Converter
+            AAB to APK Converter
           </h1>
           <p className="text-slate-300 text-lg">
-            Convert your .abb files to .apk format effortlessly
+            Convert your .aab (Android App Bundle) files to .apk format effortlessly
           </p>
         </motion.div>
 
@@ -183,7 +183,7 @@ export default function Home() {
           <CardHeader>
             <CardTitle className="text-2xl text-white">Upload Your File</CardTitle>
             <CardDescription className="text-slate-300">
-              Drag and drop your .abb file or click to browse
+              Drag and drop your .aab file or click to browse
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -209,7 +209,7 @@ export default function Home() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".abb"
+                accept=".aab"
                 onChange={handleFileSelect}
                 className="hidden"
               />
@@ -231,7 +231,7 @@ export default function Home() {
                     </motion.div>
                     <div>
                       <p className="text-white text-lg font-medium mb-2">
-                        Drop your .abb file here
+                        Drop your .aab file here
                       </p>
                       <p className="text-slate-400 text-sm">
                         or click to browse from your computer

@@ -1,6 +1,6 @@
-# ABB to APK Converter
+# AAB to APK Converter
 
-A modern, full-stack Next.js application that allows users to upload .abb files and convert them to .apk format. Built with the latest Next.js, TypeScript, TailwindCSS, shadcn/ui, and Framer Motion for a beautiful, responsive user experience.
+A modern, full-stack Next.js application that allows users to upload .aab (Android App Bundle) files and convert them to .apk format. Built with the latest Next.js, TypeScript, TailwindCSS, shadcn/ui, and Framer Motion for a beautiful, responsive user experience.
 
 ## Features
 
@@ -70,7 +70,7 @@ Abb-to-apk/
 
 ## Usage
 
-1. **Upload File**: Drag and drop a .abb file or click to browse
+1. **Upload File**: Drag and drop a .aab file or click to browse
 2. **Convert**: Click the "Convert to APK" button
 3. **Wait**: Monitor the progress bar during conversion
 4. **Download**: Click the "Download APK" button when conversion completes
@@ -98,12 +98,12 @@ const response = await fetch('/api/convert', {
 ## Mock Conversion
 
 Currently, the conversion logic is mocked for demonstration purposes. The API route:
-1. Validates the file extension (.abb)
+1. Validates the file extension (.aab)
 2. Saves the uploaded file temporarily
 3. Simulates conversion processing
 4. Returns a mock APK file
 
-**Note**: To implement real conversion logic, replace the mock conversion in `app/api/convert/route.ts` with your actual conversion algorithm.
+**Note**: To implement real conversion logic, replace the mock conversion in `app/api/convert/route.ts` with your actual conversion algorithm. For real AAB to APK conversion, you would typically use tools like `bundletool` by Google.
 
 ## Styling
 
