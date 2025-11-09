@@ -26,6 +26,9 @@ A modern, full-stack Next.js application that allows users to upload .aab (Andro
 
 - Node.js 18+ installed
 - npm or yarn package manager
+- Java 8 or higher installed (required for bundletool)
+  - Download from [Java.com](https://www.java.com/download/) or [OpenJDK](https://openjdk.org/)
+  - Verify installation: `java -version`
 
 ### Installation
 
@@ -95,15 +98,38 @@ const response = await fetch('/api/convert', {
 });
 ```
 
-## Mock Conversion
+## Real AAB to APK Conversion
 
-Currently, the conversion logic is mocked for demonstration purposes. The API route:
-1. Validates the file extension (.aab)
-2. Saves the uploaded file temporarily
-3. Simulates conversion processing
-4. Returns a mock APK file
+This application uses **Google's bundletool** to convert AAB files to APK format. The conversion process:
 
-**Note**: To implement real conversion logic, replace the mock conversion in `app/api/convert/route.ts` with your actual conversion algorithm. For real AAB to APK conversion, you would typically use tools like `bundletool` by Google.
+1. **Validates** the file extension (.aab) and file size (max 200MB)
+2. **Downloads bundletool** automatically on first use (if not already present)
+3. **Converts AAB to APKS** using bundletool in universal mode (single APK for all devices)
+4. **Extracts the universal APK** from the APKS archive
+5. **Returns the converted APK** file for download
+
+### Requirements
+
+- **Java 8 or higher** must be installed and accessible in your PATH
+- The server must have internet access to download bundletool on first use
+- Sufficient disk space for temporary files during conversion
+
+### How It Works
+
+The conversion uses Google's official [bundletool](https://github.com/google/bundletool) which:
+- Converts Android App Bundle (AAB) files to APK Set (APKS) format
+- Generates universal APKs that work on all Android devices
+- Preserves app signatures from the original AAB file
+- Handles both signed and unsigned AAB files
+
+### Troubleshooting
+
+If conversion fails:
+1. **Check Java installation**: Run `java -version` in your terminal
+2. **Verify file validity**: Ensure the AAB file is not corrupted
+3. **Check server logs**: Look for detailed error messages in the console
+4. **Disk space**: Ensure sufficient space for temporary files
+5. **Network access**: First conversion requires internet to download bundletool
 
 ## Styling
 
@@ -126,6 +152,40 @@ npm start
 
 ```bash
 npm run lint
+```
+
+## Deployment
+
+### ⚠️ Important: Vercel Limitations
+
+**This application CANNOT run on Vercel** because:
+- Vercel serverless functions don't support Java
+- No system dependencies can be installed
+- Ephemeral file system (files deleted after execution)
+- Timeout limits (10-60 seconds, but conversion needs 5+ minutes)
+
+### ✅ Recommended Deployment Options
+
+1. **Railway** (Easiest) - Supports Docker with Java
+2. **Render** - Supports Docker, free tier available
+3. **Self-Hosted** - Full control on your own server
+4. **Docker** - Deploy anywhere Docker is supported
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+
+### Quick Docker Deployment
+
+```bash
+# Build Docker image
+docker build -t aab-to-apk-converter .
+
+# Run container
+docker run -p 3000:3000 aab-to-apk-converter
+```
+
+Or use Docker Compose:
+```bash
+docker-compose up -d
 ```
 
 ## License

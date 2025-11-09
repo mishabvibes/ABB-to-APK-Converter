@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, readFile, unlink, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { convertAabToApk, checkJavaInstallation } from '@/lib/bundletool';
 
 // Configure route for larger file uploads
 export const maxDuration = 300; // 5 minutes for large file processing
@@ -65,32 +66,48 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if Java is installed
+    const javaCheck = await checkJavaInstallation();
+    if (!javaCheck.installed) {
+      console.error('Java check failed:', javaCheck.error);
+      return NextResponse.json(
+        { 
+          error: 'Java is not installed or not found in PATH. Please install Java 8 or higher to convert AAB files.',
+          details: javaCheck.error || 'Bundletool requires Java to convert AAB files to APK. Please install Java from https://www.java.com/download/',
+          troubleshooting: 'Try: 1) Restart your terminal/IDE, 2) Verify Java with "java -version", 3) Check JAVA_HOME environment variable, 4) Ensure Java is in your system PATH'
+        },
+        { status: 500 }
+      );
+    }
+    
+    console.log(`Java found: ${javaCheck.javaPath || 'java'}`);
+
     // Save uploaded file
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    uploadPath = join(UPLOAD_DIR, `${Date.now()}-${file.name}`);
+    uploadPath = join(UPLOAD_DIR, `input-${Date.now()}-${file.name}`);
     await writeFile(uploadPath, buffer);
 
-    // Simulate conversion process (mock conversion)
-    // In a real application, you would use actual conversion tools here
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate 2s conversion
+    console.log(`Starting conversion of ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
 
-    // Generate APK file (mock - just copy and rename for demonstration)
-    const apkFileName = file.name.replace('.aab', '.apk');
-    apkPath = join(UPLOAD_DIR, `${Date.now()}-${apkFileName}`);
-    
-    // For mock conversion, we'll create a dummy APK file
-    // In production, you would use actual conversion logic
-    // Here we simulate a real APK by creating a minimal ZIP structure (APK is essentially a ZIP file)
-    // Create a simple mock APK file with ZIP header
-    const zipHeader = Buffer.from([0x50, 0x4B, 0x03, 0x04]); // PK header
-    const mockContent = Buffer.from('Mock APK file - Replace with actual conversion logic');
-    const mockApkContent = Buffer.concat([zipHeader, mockContent]);
-    await writeFile(apkPath, mockApkContent);
+    // Convert AAB to APK using bundletool
+    try {
+      apkPath = await convertAabToApk(uploadPath, UPLOAD_DIR);
+      console.log(`Conversion successful: ${apkPath}`);
+    } catch (conversionError) {
+      console.error('Conversion error:', conversionError);
+      throw new Error(
+        `Failed to convert AAB to APK: ${conversionError instanceof Error ? conversionError.message : 'Unknown error'}. ` +
+        `Please ensure the AAB file is valid and not corrupted.`
+      );
+    }
 
     // Read the APK file
     const apkBuffer = await readFile(apkPath);
+    const apkFileName = file.name.replace('.aab', '.apk');
     const apkBase64 = apkBuffer.toString('base64');
+
+    console.log(`APK file created: ${apkFileName} (${(apkBuffer.length / 1024 / 1024).toFixed(2)} MB)`);
 
     // Clean up files
     if (uploadPath) {

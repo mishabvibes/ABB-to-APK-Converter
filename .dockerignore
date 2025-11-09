@@ -1,0 +1,14 @@
+node_modules
+.next
+uploads
+tools
+*.log
+.env*.local
+.git
+.gitignore
+README.md
+DEPLOYMENT.md
+TROUBLESHOOTING.md
+SETUP.md
+QUICKSTART.md
+

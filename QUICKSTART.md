@@ -2,7 +2,27 @@
 
 ## Getting Started
 
-1. **Install dependencies** (if not already installed):
+### Prerequisites
+
+**Java Installation (Required):**
+1. Download and install Java 8 or higher:
+   - **Windows**: Download from [Java.com](https://www.java.com/download/) or [Adoptium](https://adoptium.net/)
+   - **Mac**: `brew install openjdk@11` or download from [Adoptium](https://adoptium.net/)
+   - **Linux**: `sudo apt install default-jdk` or `sudo yum install java-11-openjdk`
+
+2. Verify Java installation:
+   ```bash
+   java -version
+   ```
+   You should see something like: `openjdk version "11.0.x"` or `java version "1.8.0_x"`
+
+3. Ensure Java is in your PATH:
+   - Windows: Java installer usually adds it automatically
+   - Mac/Linux: May need to set JAVA_HOME environment variable
+
+### Installation Steps
+
+1. **Install dependencies**:
    ```bash
    npm install
    ```
@@ -14,6 +34,11 @@
 
 3. **Open your browser**:
    Navigate to [http://localhost:3000](http://localhost:3000)
+
+4. **First Conversion**:
+   - On the first conversion, bundletool will be automatically downloaded
+   - This requires internet access and may take a minute
+   - Subsequent conversions will be faster
 
 ## Features Overview
 
@@ -37,14 +62,16 @@
 
 ## Customization
 
-### Changing the Conversion Logic
+### Conversion Process
 
-To implement real conversion logic, edit `app/api/convert/route.ts`:
+The app now uses **real AAB to APK conversion** using Google's bundletool:
 
-```typescript
-// Replace the mock conversion section (around line 55-70)
-// with your actual conversion logic
-```
+1. **Automatic bundletool download**: On first use, bundletool is downloaded automatically
+2. **AAB to APKS conversion**: Converts AAB to APKS format in universal mode
+3. **APK extraction**: Extracts the universal APK from the APKS archive
+4. **File delivery**: Returns the converted APK for download
+
+The conversion logic is in `lib/bundletool.ts` and `app/api/convert/route.ts`.
 
 ### Styling Customization
 
@@ -82,8 +109,16 @@ Abb-to-apk/
 
 ### File Upload Issues
 - Check that the `uploads` directory has write permissions
-- Verify file size is under 50MB
+- Verify file size is under 200MB
 - Ensure file extension is `.aab` (Android App Bundle)
+- Verify Java is installed: `java -version`
+
+### Conversion Issues
+- **Java not found**: Install Java 8+ and ensure it's in your PATH
+- **Bundletool download fails**: Check internet connection for first conversion
+- **Conversion timeout**: Large files may take several minutes to convert
+- **APK extraction fails**: Check server logs for detailed error messages
+- **Invalid AAB file**: Ensure the AAB file is not corrupted
 
 ### API Errors
 - Check server console for error messages
